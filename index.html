@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GH Import | Sua Loja Multimarcas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Animações suaves */
+        .cart-badge {
+            transition: all 0.2s ease;
+        }
+        .product-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .btn-add {
+            transition: all 0.2s;
+        }
+        .btn-add:active {
+            transform: scale(0.95);
+        }
+        /* Sidebar do carrinho */
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+        .cart-sidebar.open {
+            right: 0;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.open {
+            display: block;
+        }
+        @media (max-width: 500px) {
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Overlay para fechar carrinho -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar do Carrinho -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="bg-indigo-600 text-white p-4 flex justify-between items-center sticky top-0">
+            <h3 class="text-xl font-bold"><i class="fa-solid fa-bag-shopping mr-2"></i>Meu Carrinho</h3>
+            <button id="closeCartBtn" class="text-white text-2xl hover:text-gray-200">&times;</button>
+        </div>
+        <div id="cartItems" class="p-4 space-y-3">
+            <p class="text-gray-500 text-center py-8">Seu carrinho está vazio</p>
+        </div>
+        <div class="border-t p-4 bg-gray-50 sticky bottom-0">
+            <div class="flex justify-between font-bold text-lg mb-4">
+                <span>Total:</span>
+                <span class="text-indigo-600" id="cartTotal">R$ 0,00</span>
+            </div>
+            <button id="whatsappCheckout" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2">
+                <i class="fa-brands fa-whatsapp text-xl"></i>
+                Enviar Pedido via WhatsApp
+            </button>
+            <button id="clearCartBtn" class="w-full mt-3 border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition">
+                Limpar Carrinho
+            </button>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-indigo-600">GH IMPORT</h1>
+            <div class="hidden md:flex space-x-8 font-medium">
+                <a href="#masculino" class="hover:text-indigo-600 transition">Masculino</a>
+                <a href="#feminino" class="hover:text-indigo-600 transition">Feminino</a>
+                <a href="#perfumes" class="hover:text-indigo-600 transition">Perfumes</a>
+                <a href="#tenis" class="hover:text-indigo-600 transition">Tênis</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-indigo-600"></i>
+                <div class="relative cursor-pointer" id="cartIcon">
+                    <i class="fa-solid fa-cart-shopping text-2xl hover:text-indigo-600"></i>
+                    <span id="cartCount" class="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-r from-indigo-900 to-indigo-700 text-white py-16 text-center">
+        <h2 class="text-4xl md:text-6xl font-extrabold mb-4">Coleção 2026</h2>
+        <p class="text-lg opacity-90">O melhor da moda e fragrâncias em um só lugar.</p>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <!-- Moda Masculina -->
+        <section id="masculino" class="mb-16">
+            <h3 class="text-2xl font-bold border-l-4 border-indigo-600 pl-4 mb-8">Moda Masculina</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-masculino"></div>
+        </section>
+
+        <!-- Moda Feminina -->
+        <section id="feminino" class="mb-16">
+            <h3 class="text-2xl font-bold border-l-4 border-pink-500 pl-4 mb-8">Moda Feminina</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-feminino"></div>
+        </section>
+
+        <!-- Perfumes -->
+        <section id="perfumes" class="mb-16">
+            <h3 class="text-2xl font-bold border-l-4 border-yellow-500 pl-4 mb-8">Perfumes</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-perfumes"></div>
+        </section>
+
+        <!-- Tênis -->
+        <section id="tenis" class="mb-16">
+            <h3 class="text-2xl font-bold border-l-4 border-green-500 pl-4 mb-8">Tênis</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-tenis"></div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-900 text-white py-10 text-center">
+        <p>&copy; 2026 GH Import - Todos os direitos reservados.</p>
+        <div class="mt-4 space-x-4">
+            <i class="fa-brands fa-instagram text-xl cursor-pointer hover:text-pink-400"></i>
+            <i class="fa-brands fa-facebook text-xl cursor-pointer hover:text-blue-400"></i>
+            <i class="fa-brands fa-whatsapp text-xl cursor-pointer hover:text-green-400"></i>
+        </div>
+    </footer>
+
+    <script>
+        // ======================== PRODUTOS COM IMAGENS REAIS ========================
+        const produtos = [
+            // Masculino
+            { id: 1, nome: "Camisa Social Slim Fit", preco: 149.90, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=👔+Camisa+Slim", desc: "Tecido de alta qualidade, caimento perfeito" },
+            { id: 2, nome: "Calça Jeans Premium", preco: 199.00, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=👖+Jeans+Premium", desc: "Jeans super macio e resistente" },
+            { id: 3, nome: "Jaqueta de Couro Eco", preco: 349.00, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=🧥+Jaqueta+Couro", desc: "Couro ecológico, estilo moderno" },
+            { id: 4, nome: "Bermuda Cargo Sarja", preco: 89.90, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=🩳+Bermuda+Cargo", desc: "Confortável e estilosa" },
+            // Feminino
+            { id: 5, nome: "Vestido Midi Floral", preco: 179.90, categoria: "feminino", img: "https://placehold.co/400x400/e2e8f0/ec4899?text=👗+Vestido+Floral", desc: "Estampa floral, tecido leve" },
+            { id: 6, nome: "Blazer Alfaiataria", preco: 259.00, categoria: "feminino", img: "https://placehold.co/400x400/e2e8f0/ec4899?text=👔+Blazer", desc: "Alfaiataria refinada" },
+            { id: 7, nome: "Conjunto de Linho", preco: 210.00, categoria: "feminino", img: "https://placehold.co/400x400/e2e8f0/ec4899?text=👚+Conjunto+Linho", desc: "Perfeito para o verão" },
+            { id: 8, nome: "Blusa de Seda", preco: 120.00, categoria: "feminino", img: "https://placehold.co/400x400/e2e8f0/ec4899?text=👕+Blusa+Seda", desc: "Toque suave e elegante" },
+            // Perfumes
+            { id: 9, nome: "Blue de France 100ml", preco: 450.00, categoria: "perfumes", img: "https://placehold.co/400x400/e2e8f0/eab308?text=🧴+Perfume+Blue", desc: "Fragrância marcante e sofisticada" },
+            { id: 10, nome: "Rose Garden EDP", preco: 380.00, categoria: "perfumes", img: "https://placehold.co/400x400/e2e8f0/eab308?text=🌹+Rose+Garden", desc: "Floral delicado e envolvente" },
+            { id: 11, nome: "Night Intense", preco: 520.00, categoria: "perfumes", img: "https://placehold.co/400x400/e2e8f0/eab308?text=🌙+Night+Intense", desc: "Notas amadeiradas e sensuais" },
+            { id: 12, nome: "Ocean Breeze", preco: 290.00, categoria: "perfumes", img: "https://placehold.co/400x400/e2e8f0/eab308?text=🌊+Ocean+Breeze", desc: "Frescura do mar em cada borrifada" },
+            // Tênis
+            { id: 13, nome: "Tênis Ultra Run Pro", preco: 599.00, categoria: "tenis", img: "https://placehold.co/400x400/e2e8f0/22c55e?text=👟+Tênis+Run", desc: "Amortecimento premium" },
+            { id: 14, nome: "Sneaker Urban White", preco: 249.00, categoria: "tenis", img: "https://placehold.co/400x400/e2e8f0/22c55e?text=👟+Sneaker+Urban", desc: "Casual e estiloso" },
+            { id: 15, nome: "Bota Adventure", preco: 420.00, categoria: "tenis", img: "https://placehold.co/400x400/e2e8f0/22c55e?text=🥾+Bota+Adventure", desc: "Resistente e confortável" },
+            { id: 16, nome: "MVP Basketball High", preco: 680.00, categoria: "tenis", img: "https://placehold.co/400x400/e2e8f0/22c55e?text=🏀+MVP+High", desc: "Estilo basquete, cano alto" }
+        ];
+
+        // Carrinho: { id, nome, preco, quantidade, img }
+        let carrinho = [];
+
+        // Carregar carrinho do localStorage
+        function carregarCarrinho() {
+            const saved = localStorage.getItem('ghimport_carrinho');
+            if (saved) {
+                try {
+                    carrinho = JSON.parse(saved);
+                } catch(e) {}
+            }
+            atualizarInterfaceCarrinho();
+        }
+
+        function salvarCarrinho() {
+            localStorage.setItem('ghimport_carrinho', JSON.stringify(carrinho));
+        }
+
+        function adicionarAoCarrinho(produto) {
+            const existente = carrinho.find(item => item.id === produto.id);
+            if (existente) {
+                existente.quantidade += 1;
+            } else {
+                carrinho.push({
+                    id: produto.id,
+                    nome: produto.nome,
+                    preco: produto.preco,
+                    quantidade: 1,
+                    img: produto.img
+                });
+            }
+            salvarCarrinho();
+            atualizarInterfaceCarrinho();
+            animarBotao(produto.id);
+        }
+
+        function removerDoCarrinho(id) {
+            const index = carrinho.findIndex(item => item.id === id);
+            if (index !== -1) {
+                if (carrinho[index].quantidade > 1) {
+                    carrinho[index].quantidade -= 1;
+                } else {
+                    carrinho.splice(index, 1);
+                }
+            }
+            salvarCarrinho();
+            atualizarInterfaceCarrinho();
+        }
+
+        function limparCarrinho() {
+            carrinho = [];
+            salvarCarrinho();
+            atualizarInterfaceCarrinho();
+        }
+
+        function atualizarInterfaceCarrinho() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            const cartCountSpan = document.getElementById('cartCount');
+            const cartTotalSpan = document.getElementById('cartTotal');
+            
+            let totalItens = 0;
+            let totalValor = 0;
+            
+            if (carrinho.length === 0) {
+                cartItemsDiv.innerHTML = '<p class="text-gray-500 text-center py-8">Seu carrinho está vazio</p>';
+                cartCountSpan.innerText = '0';
+                cartTotalSpan.innerText = 'R$ 0,00';
+                return;
+            }
+            
+            let html = '';
+            carrinho.forEach(item => {
+                totalItens += item.quantidade;
+                totalValor += item.preco * item.quantidade;
+                html += `
+                    <div class="flex gap-3 border-b pb-3 mb-3">
+                        <img src="${item.img}" alt="${item.nome}" class="w-16 h-16 object-cover rounded-lg bg-gray-100">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-sm">${item.nome}</h4>
+                            <p class="text-indigo-600 font-bold">R$ ${item.preco.toFixed(2).replace('.', ',')}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <button onclick="removerDoCarrinho(${item.id})" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">-</button>
+                                <span class="text-sm font-medium">${item.quantidade}</span>
+                                <button onclick="adicionarAoCarrinho({id:${item.id}, nome:'${item.nome}', preco:${item.preco}, img:'${item.img}'})" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">+</button>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-indigo-600">R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            cartItemsDiv.innerHTML = html;
+            cartCountSpan.innerText = totalItens;
+            cartTotalSpan.innerText = `R$ ${totalValor.toFixed(2).replace('.', ',')}`;
+        }
+
+        function animarBotao(id) {
+            const btn = document.querySelector(`#btn-${id}`);
+            if (btn) {
+                btn.classList.add('bg-green-600');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Adicionado!';
+                setTimeout(() => {
+                    btn.classList.remove('bg-green-600');
+                    btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Comprar';
+                }, 1000);
+            }
+        }
+
+        // Enviar pedido via WhatsApp
+        function enviarWhatsApp() {
+            if (carrinho.length === 0) {
+                alert('Seu carrinho está vazio! Adicione produtos antes de enviar.');
+                return;
+            }
+            
+            let totalGeral = 0;
+            let mensagem = "🛍️ *PEDIDO GH IMPORT* 🛍️\n\n";
+            mensagem += "*📋 ITENS DO PEDIDO:*\n";
+            mensagem += "━━━━━━━━━━━━━━━━━━━━\n";
+            
+            carrinho.forEach((item, idx) => {
+                const subtotal = item.preco * item.quantidade;
+                totalGeral += subtotal;
+                mensagem += `${idx+1}. *${item.nome}*\n`;
+                mensagem += `   Quantidade: ${item.quantidade}\n`;
+                mensagem += `   Valor unitário: R$ ${item.preco.toFixed(2).replace('.', ',')}\n`;
+                mensagem += `   Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n\n`;
+            });
+            
+            mensagem += "━━━━━━━━━━━━━━━━━━━━\n";
+            mensagem += `💰 *TOTAL DO PEDIDO:* R$ ${totalGeral.toFixed(2).replace('.', ',')}\n\n`;
+            mensagem += "📦 *FORMA DE ENTREGA:* A combinar\n";
+            mensagem += "💳 *PAGAMENTO:* A combinar\n\n";
+            mensagem += "✨ Agradecemos pela preferência! Responda esta mensagem para confirmar seu pedido.\n";
+            mensagem += "🔗 GH Import - Qualidade e estilo para você!";
+            
+            const telefone = "5511999999999"; // Número padrão - o cliente pode alterar
+            const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        }
+
+        // Renderizar produtos na tela
+        function renderizarProdutos() {
+            const masculinoGrid = document.getElementById('produtos-masculino');
+            const femininoGrid = document.getElementById('produtos-feminino');
+            const perfumesGrid = document.getElementById('produtos-perfumes');
+            const tenisGrid = document.getElementById('produtos-tenis');
+            
+            if (!masculinoGrid) return;
+            
+            masculinoGrid.innerHTML = '';
+            femininoGrid.innerHTML = '';
+            perfumesGrid.innerHTML = '';
+            tenisGrid.innerHTML = '';
+            
+            produtos.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = 'product-card bg-white rounded-xl shadow-sm hover:shadow-md transition p-4';
+                card.innerHTML = `
+                    <div class="h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                        <img src="${prod.img}" alt="${prod.nome}" class="w-full h-full object-cover rounded-lg">
+                    </div>
+                    <h4 class="font-semibold text-lg">${prod.nome}</h4>
+                    <p class="text-gray-500 text-sm mt-1">${prod.desc}</p>
+                    <p class="text-indigo-600 font-bold mt-2 text-xl">R$ ${prod.preco.toFixed(2).replace('.', ',')}</p>
+                    <button id="btn-${prod.id}" class="btn-add w-full mt-4 bg-gray-900 text-white py-2.5 rounded-lg hover:bg-indigo-600 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cart-plus"></i> Comprar
+                    </button>
+                `;
+                
+                const btn = card.querySelector(`#btn-${prod.id}`);
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    adicionarAoCarrinho(prod);
+                });
+                
+                if (prod.categoria === 'masculino') masculinoGrid.appendChild(card);
+                else if (prod.categoria === 'feminino') femininoGrid.appendChild(card);
+                else if (prod.categoria === 'perfumes') perfumesGrid.appendChild(card);
+                else if (prod.categoria === 'tenis') tenisGrid.appendChild(card);
+            });
+        }
+
+        // Funções do carrinho globais
+        window.removerDoCarrinho = removerDoCarrinho;
+        window.adicionarAoCarrinho = adicionarAoCarrinho;
+
+        // Inicializar eventos e UI
+        function init() {
+            renderizarProdutos();
+            carregarCarrinho();
+            
+            const cartIcon = document.getElementById('cartIcon');
+            const cartSidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('overlay');
+            const closeCartBtn = document.getElementById('closeCartBtn');
+            const clearCartBtn = document.getElementById('clearCartBtn');
+            const whatsappCheckout = document.getElementById('whatsappCheckout');
+            
+            cartIcon.addEventListener('click', () => {
+                cartSidebar.classList.add('open');
+                overlay.classList.add('open');
+            });
+            
+            function closeCart() {
+                cartSidebar.classList.remove('open');
+                overlay.classList.remove('open');
+            }
+            
+            closeCartBtn.addEventListener('click', closeCart);
+            overlay.addEventListener('click', closeCart);
+            clearCartBtn.addEventListener('click', () => {
+                if(confirm('Deseja realmente limpar todo o carrinho?')) {
+                    limparCarrinho();
+                }
+            });
+            whatsappCheckout.addEventListener('click', enviarWhatsApp);
+        }
+        
+        init();
+    </script>
+</body>
+</html>
