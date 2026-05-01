@@ -7,478 +7,337 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Animações dos Cards */
-        .product-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Sidebar do Carrinho */
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* Sidebar Carrinho */
         .cart-sidebar {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: white;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
-            z-index: 1000;
-            transition: right 0.3s ease;
-            overflow-y: auto;
+            position: fixed; top: 0; right: -400px; width: 400px; height: 100vh;
+            background: white; z-index: 1001; transition: right 0.4s ease;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
         }
         .cart-sidebar.open { right: 0; }
         .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: none;
         }
         .overlay.open { display: block; }
-        
-        @media (max-width: 500px) { 
-            .cart-sidebar { width: 100%; right: -100%; } 
-        }
 
-        /* Slider/Carrossel de Imagens (sem anúncio sobreposto) */
-        .slider-container {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        /* --- CARROSSEL DE ANÚNCIOS (BANNER) --- */
+        .ml-section { background: #fbbf24; width: 100%; overflow: hidden; }
+        .ml-container { position: relative; width: 100%; }
+        .ml-track { display: flex; transition: transform 0.6s ease-in-out; }
+        .ml-slide { flex: 0 0 100%; padding: 15px 0; }
+        .ml-offer-box {
+            background: white; margin: 0 auto; max-width: 90%;
+            padding: 15px 25px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .slider-track {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-        .slide {
-            flex: 0 0 100%;
-            position: relative;
-        }
-        .slide img {
-            width: 100%;
-            height: 500px;
-            object-fit: cover;
-            opacity: 0.9;
-        }
-        .slider-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.3);
-            backdrop-filter: blur(5px);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            z-index: 20;
-        }
-        .slider-btn:hover {
-            background: rgba(255,255,255,0.5);
-            transform: translateY(-50%) scale(1.1);
-        }
-        .slider-btn.prev { left: 20px; }
-        .slider-btn.next { right: 20px; }
-        .dots-container {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 12px;
-            z-index: 20;
-        }
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .dot.active {
-            background: white;
-            width: 25px;
-            border-radius: 5px;
-        }
-
-        /* Banner de Anúncios do Mercado Livre - Animação de Troca */
-        .ml-banner {
-            background: linear-gradient(135deg, #fff9e6 0%, #fff0cc 100%);
-            border-bottom: 3px solid #fbbf24;
-        }
-        .ml-slider {
-            position: relative;
-            overflow: hidden;
-        }
-        .ml-track {
-            display: flex;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .ml-slide {
-            flex: 0 0 100%;
-            padding: 0.75rem 1rem;
-        }
-        .ml-offer {
-            background: white;
-            border-radius: 1rem;
-            padding: 0.75rem 1.25rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .ml-offer:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .ml-offer-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .ml-badge {
-            background: #fbbf24;
-            color: #1e1b4b;
-            font-size: 0.7rem;
-            font-weight: 900;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
+        .ml-offer-text { font-weight: 800; color: #1e1b4b; font-size: 1.1rem; }
         .ml-btn {
-            background: #00aa66;
-            color: white;
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            white-space: nowrap;
-            text-decoration: none;
+            background: #00a650; color: white; padding: 10px 20px;
+            border-radius: 8px; font-weight: 900; text-transform: uppercase;
+            font-size: 0.8rem; transition: background 0.3s; text-decoration: none;
         }
-        .ml-btn:hover {
-            background: #008844;
-            transform: scale(1.02);
-        }
-        .ml-prev, .ml-next {
-            background: rgba(0,0,0,0.1);
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-        .ml-prev:hover, .ml-next:hover {
-            background: rgba(0,0,0,0.2);
-        }
-        .ml-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #d1d5db;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .ml-dot.active {
-            background: #fbbf24;
-            width: 20px;
-            border-radius: 3px;
+        .ml-btn:hover { background: #008744; }
+
+        /* --- CARROSSEL DE IMAGENS PRINCIPAL (450px com imagens otimizadas) --- */
+        .hero-slider { position: relative; width: 100%; height: 450px; overflow: hidden; background: #000; }
+        .hero-track { display: flex; height: 100%; transition: transform 0.8s ease-in-out; }
+        .hero-slide { flex: 0 0 100%; height: 100%; }
+        .hero-slide img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover;
+            filter: brightness(0.95);
         }
 
-        /* WhatsApp Flutuante */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-            animation: pulse-green 2s infinite;
+        /* Cards de Produto */
+        .product-card { transition: transform 0.3s; border: 1px solid #eee; background: white; border-radius: 1rem; overflow: hidden; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15); }
+        
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
+        .whatsapp-float a { 
+            display: flex; align-items: center; justify-content: center;
+            width: 65px; height: 65px; background: #25D366; border-radius: 50%;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
         }
-        .whatsapp-float a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 65px;
-            height: 65px;
-            background: #25D366;
-            color: white;
-            border-radius: 50%;
-            font-size: 35px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        .whatsapp-float a:hover {
-            transform: scale(1.1);
-            background: #128C7E;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-        @keyframes pulse-green {
-            0%, 100% {
-                transform: scale(1);
-                box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-            }
-            50% {
-                transform: scale(1.08);
-                box-shadow: 0 6px 25px rgba(37, 211, 102, 0.5);
-            }
-        }
-        /* Tooltip do WhatsApp */
-        .whatsapp-tooltip {
-            position: absolute;
-            right: 75px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #1f2937;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        .whatsapp-tooltip::after {
-            content: '';
-            position: absolute;
-            right: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-width: 5px;
-            border-style: solid;
-            border-color: transparent transparent transparent #1f2937;
-        }
-        .whatsapp-float:hover .whatsapp-tooltip {
-            opacity: 1;
-            visibility: visible;
-            right: 85px;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .ml-slide {
-            animation: fadeInUp 0.5s ease-out;
-        }
-
+        .whatsapp-float a:hover { transform: scale(1.1); }
+        
         @media (max-width: 768px) {
-            .slide img { height: 400px; }
-            .ml-offer { padding: 0.5rem 0.75rem; }
-            .ml-btn { padding: 0.35rem 0.75rem; font-size: 0.7rem; }
-            .ml-offer p { font-size: 0.8rem; }
-            .whatsapp-float a { width: 55px; height: 55px; font-size: 30px; }
-            .whatsapp-float { bottom: 20px; right: 20px; }
+            .hero-slider { height: 350px; }
+            .ml-offer-box { flex-direction: column; text-align: center; gap: 10px; }
+            .ml-offer-text { font-size: 0.9rem; }
+            .ml-btn { font-size: 0.7rem; padding: 8px 16px; }
+            .cart-sidebar { width: 100%; right: -100%; }
         }
+        
         @media (max-width: 640px) {
-            .slide img { height: 300px; }
-            .ml-offer { flex-direction: column; text-align: center; }
-            .ml-offer-content { justify-content: center; }
-            .ml-btn { justify-content: center; }
+            .hero-slider { height: 280px; }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50">
 
-    <div class="overlay" id="overlay"></div>
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
     <div class="cart-sidebar" id="cartSidebar">
-        <div class="bg-indigo-600 text-white p-4 flex justify-between items-center sticky top-0">
-            <h3 class="text-xl font-bold"><i class="fa-solid fa-bag-shopping mr-2"></i>Meu Carrinho</h3>
-            <button id="closeCartBtn" class="text-white text-2xl">&times;</button>
+        <div class="bg-indigo-700 text-white p-6 flex justify-between items-center">
+            <h3 class="text-xl font-bold">CARRINHO</h3>
+            <button onclick="toggleCart()" class="text-3xl hover:text-gray-200">&times;</button>
         </div>
-        <div id="cartItems" class="p-4 space-y-3"></div>
-        <div class="border-t p-4 bg-gray-50 sticky bottom-0">
-            <div class="flex justify-between font-bold text-lg mb-4">
-                <span>Total:</span>
-                <span class="text-indigo-600" id="cartTotal">R$ 0,00</span>
+        <div id="cartItems" class="p-6 overflow-y-auto" style="height: calc(100vh - 200px);"></div>
+        <div class="absolute bottom-0 w-full p-6 bg-white border-t shadow-lg">
+            <div class="flex justify-between font-black text-xl mb-4">
+                <span>TOTAL:</span> <span id="cartTotal" class="text-indigo-600">R$ 0,00</span>
             </div>
-            <button id="whatsappCheckout" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
-                <i class="fa-brands fa-whatsapp text-xl"></i> Enviar Pedido via WhatsApp
-            </button>
-            <button id="clearCartBtn" class="w-full mt-3 border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100">Limpar Carrinho</button>
+            <button onclick="checkout()" class="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-xl font-black transition">FINALIZAR NO WHATSAPP</button>
         </div>
     </div>
 
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-indigo-600">GM IMPORT</h1>
-            <div class="hidden md:flex space-x-8 font-medium">
-                <a href="#masculino" class="hover:text-indigo-600">Masculino</a>
-                <a href="#feminino" class="hover:text-indigo-600">Feminino</a>
-                <a href="#perfumes" class="hover:text-indigo-600">Perfumes</a>
-                <a href="#tenis" class="hover:text-indigo-600">Tênis</a>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="relative cursor-pointer" id="cartIcon">
-                    <i class="fa-solid fa-cart-shopping text-2xl hover:text-indigo-600"></i>
-                    <span id="cartCount" class="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+    <!-- Banner de Ofertas Mercado Livre -->
+    <div class="ml-section">
+        <div class="ml-container">
+            <div class="ml-track" id="mlTrack">
+                <div class="ml-slide">
+                    <div class="ml-offer-box">
+                        <span class="ml-offer-text">🔥 CREATINA DARK LAB 1kg | <span class="text-red-500 line-through">R$ 159</span> <span class="text-green-600 font-bold">R$ 69,90</span></span>
+                        <a href="https://meli.la/1DwmLWU" target="_blank" class="ml-btn">Comprar no ML</a>
+                    </div>
+                </div>
+                <div class="ml-slide">
+                    <div class="ml-offer-box">
+                        <span class="ml-offer-text">⚡ OFERTA RELÂMPAGO GM Import | <span class="text-green-600">ATÉ 60% OFF</span></span>
+                        <a href="https://meli.la/1wNG1Hd" target="_blank" class="ml-btn">Ver Link</a>
+                    </div>
+                </div>
+                <div class="ml-slide">
+                    <div class="ml-offer-box">
+                        <span class="ml-offer-text">💎 SELEÇÃO PREMIUM | <span class="text-green-600">FRETE GRÁTIS</span></span>
+                        <a href="https://meli.la/2i36if8" target="_blank" class="ml-btn">Acessar</a>
+                    </div>
+                </div>
+                <div class="ml-slide">
+                    <div class="ml-offer-box">
+                        <span class="ml-offer-text">🚚 ENTREGA FULL para todo Brasil | <span class="text-green-600">+ RÁPIDO</span></span>
+                        <a href="https://meli.la/2TTJj3E" target="_blank" class="ml-btn">Aproveitar</a>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-indigo-700 italic">GM IMPORT</h1>
+            <div class="hidden md:flex space-x-6 font-bold text-gray-600 text-xs uppercase">
+                <a href="#masculino" class="hover:text-indigo-700 transition">Masculino</a>
+                <a href="#feminino" class="hover:text-indigo-700 transition">Feminino</a>
+                <a href="#perfumes" class="hover:text-indigo-700 transition">Perfumes</a>
+            </div>
+            <button onclick="toggleCart()" class="relative p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition">
+                <i class="fa-solid fa-cart-shopping text-gray-700 text-xl"></i>
+                <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
+            </button>
         </div>
     </nav>
 
-    <!-- WhatsApp Flutuante -->
-    <div class="whatsapp-float">
-        <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20mais%20informações%20sobre%20os%20produtos%20da%20GM%20Import." target="_blank" rel="noopener noreferrer">
-            <i class="fa-brands fa-whatsapp"></i>
-            <span class="whatsapp-tooltip">Fale conosco!</span>
-        </a>
-    </div>
-
-    <!-- Banner de Anúncios do Mercado Livre (Único banner no topo) -->
-    <div class="ml-banner">
-        <div class="container mx-auto px-4 py-2">
-            <div class="ml-slider relative">
-                <div class="ml-track" id="mlTrack">
-                    <!-- Slide 1: Creatina Dark Lab 1kg (SEM IMAGEM) -->
-                    <div class="ml-slide">
-                        <div class="ml-offer">
-                            <div class="ml-offer-content">
-                                <div class="flex items-center gap-3 flex-wrap">
-                                    <span class="ml-badge"><i class="fa-solid fa-flask"></i> SUPLEMENTOS</span>
-                                    <p class="font-bold text-indigo-900">💪 Creatina Dark Lab 1kg <span class="text-red-500 line-through text-sm">R$ 159</span> <span class="text-green-600">R$ 69,90</span></p>
-                                    <span class="text-xs text-gray-500">🔥 56% OFF + FRETE GRÁTIS</span>
-                                </div>
-                            </div>
-                            <a href="https://meli.la/1wYZsxg" target="_blank" class="ml-btn"><i class="fa-brands fa-mercadopago"></i> COMPRAR AGORA</a>
-                        </div>
-                    </div>
-                    <!-- Slide 2: Perfumes Importados -->
-                    <div class="ml-slide">
-                        <div class="ml-offer">
-                            <div class="ml-offer-content">
-                                <div class="flex items-center gap-3 flex-wrap">
-                                    <span class="ml-badge"><i class="fa-solid fa-gift"></i> FRAGRÂNCIAS</span>
-                                    <p class="font-bold text-indigo-900">🧴 Perfumes Importados <span class="text-red-500 line-through text-sm">R$ 450</span> <span class="text-green-600">R$ 299</span></p>
-                                    <span class="text-xs text-gray-500">⚡ Até 50% OFF</span>
-                                </div>
-                            </div>
-                            <a href="https://meli.la/1gXmd84" target="_blank" class="ml-btn"><i class="fa-brands fa-mercadopago"></i> VER OFERTAS</a>
-                        </div>
-                    </div>
-                    <!-- Slide 3: Coleção Verão -->
-                    <div class="ml-slide">
-                        <div class="ml-offer">
-                            <div class="ml-offer-content">
-                                <div class="flex items-center gap-3 flex-wrap">
-                                    <span class="ml-badge"><i class="fa-solid fa-star"></i> LANÇAMENTO</span>
-                                    <p class="font-bold text-indigo-900">👗 Coleção Verão 2026 <span class="text-green-600">30% OFF + BRINDE</span></p>
-                                    <span class="text-xs text-gray-500">🎁 Parcele em até 6x</span>
-                                </div>
-                            </div>
-                            <a href="https://meli.la/1gXmd84" target="_blank" class="ml-btn"><i class="fa-brands fa-mercadopago"></i> APROVEITAR</a>
-                        </div>
-                    </div>
-                    <!-- Slide 4: Liquidação -->
-                    <div class="ml-slide">
-                        <div class="ml-offer">
-                            <div class="ml-offer-content">
-                                <div class="flex items-center gap-3 flex-wrap">
-                                    <span class="ml-badge"><i class="fa-solid fa-tag"></i> LIQUIDAÇÃO</span>
-                                    <p class="font-bold text-indigo-900">👟 Tênis e Acessórios <span class="text-green-600">ATÉ 40% OFF</span></p>
-                                    <span class="text-xs text-gray-500">💳 Parcelamento sem juros</span>
-                                </div>
-                            </div>
-                            <a href="https://meli.la/1gXmd84" target="_blank" class="ml-btn"><i class="fa-brands fa-mercadopago"></i> MERCADO LIVRE</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Botões de navegação do mini banner -->
-                <button class="ml-prev absolute left-0 top-1/2 -translate-y-1/2 -ml-2 md:ml-0" id="mlPrev">
-                    <i class="fa-solid fa-chevron-left text-gray-600 text-sm"></i>
-                </button>
-                <button class="ml-next absolute right-0 top-1/2 -translate-y-1/2 -mr-2 md:mr-0" id="mlNext">
-                    <i class="fa-solid fa-chevron-right text-gray-600 text-sm"></i>
-                </button>
-                
-                <!-- Dots do mini banner -->
-                <div class="flex justify-center gap-2 mt-1" id="mlDots"></div>
+    <!-- Carrossel Principal com Imagens em Resolução Menor (otimizadas) -->
+    <div class="hero-slider">
+        <div class="hero-track" id="heroTrack">
+            <div class="hero-slide">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=450&fit=crop&q=80" alt="Tênis Esportivos">
+            </div>
+            <div class="hero-slide">
+                <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&h=450&fit=crop&q=80" alt="Perfumes Premium">
+            </div>
+            <div class="hero-slide">
+                <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&h=450&fit=crop&q=80" alt="Tênis e Acessórios">
             </div>
         </div>
     </div>
 
-    <!-- Carrossel de Produtos Mercado Livre (APENAS IMAGENS, sem sobreposição) -->
-    <div class="slider-container">
-        <div class="slider-track" id="sliderTrack">
-            <div class="slide">
-                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&h=500&fit=crop" alt="Tênis Esportivos">
-            </div>
-            <div class="slide">
-                <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1200&h=500&fit=crop" alt="Perfumes Premium">
-            </div>
-            <div class="slide">
-                <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1200&h=500&fit=crop" alt="Moda Feminina">
-            </div>
-            <div class="slide">
-                <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=1200&h=500&fit=crop" alt="Tênis e Acessórios">
-            </div>
-        </div>
-        <div class="slider-btn prev" id="prevSlide">
-            <i class="fa-solid fa-chevron-left text-white text-xl"></i>
-        </div>
-        <div class="slider-btn next" id="nextSlide">
-            <i class="fa-solid fa-chevron-right text-white text-xl"></i>
-        </div>
-        <div class="dots-container" id="dotsContainer"></div>
-    </div>
-
+    <!-- Produtos -->
     <main class="container mx-auto px-6 py-12">
         <section id="masculino" class="mb-16">
-            <h3 class="text-2xl font-bold border-l-4 border-indigo-600 pl-4 mb-8">👔 Moda Masculina</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-masculino"></div>
+            <h2 class="text-3xl font-black mb-8 border-l-8 border-indigo-600 pl-4 uppercase">Masculino</h2>
+            <div id="grid-masculino" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
         </section>
 
         <section id="feminino" class="mb-16">
-            <h3 class="text-2xl font-bold border-l-4 border-pink-500 pl-4 mb-8">👗 Moda Feminina</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-feminino"></div>
+            <h2 class="text-3xl font-black mb-8 border-l-8 border-pink-500 pl-4 uppercase">Feminino</h2>
+            <div id="grid-feminino" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
         </section>
 
         <section id="perfumes" class="mb-16">
-            <h3 class="text-2xl font-bold border-l-4 border-yellow-500 pl-4 mb-8">🧴 Perfumes</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-perfumes"></div>
-        </section>
-
-        <section id="tenis" class="mb-16">
-            <h3 class="text-2xl font-bold border-l-4 border-green-500 pl-4 mb-8">👟 Tênis</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="produtos-tenis"></div>
+            <h2 class="text-3xl font-black mb-8 border-l-8 border-yellow-500 pl-4 uppercase">Perfumes</h2>
+            <div id="grid-perfumes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
         </section>
     </main>
 
-    <footer class="bg-gray-900 text-white py-10 text-center">
-        <p>&copy; 2026 GM Import - Todos os direitos reservados.</p>
-    </footer>
+    <!-- WhatsApp Flutuante -->
+    <div class="whatsapp-float">
+        <a href="https://wa.me/5561982740074?text=Olá! Gostaria de fazer um pedido na GM Import!" target="_blank" class="hover:scale-110 transition">
+            <i class="fa-brands fa-whatsapp text-4xl text-white"></i>
+        </a>
+    </div>
 
     <script>
-        // Produtos da loja
+        // Base de produtos
         const produtos = [
-            { id: 1, nome: "Camisa Social Slim Fit", preco: 149.90, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=👔+Camisa+Slim", desc: "Caimento perfeito" },
-            { id: 2, nome: "Blazer Moderno", preco: 349.90, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=🤵+Blazer", desc: "Tecido premium" },
-            { id: 3, nome: "Calça Jeans Skinny", preco: 189.90, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=👖+Jeans", desc: "Conforto e estilo" },
-            { id: 4, nome: "Polo Clássica", preco: 129.90, categoria: "masculino", img: "https://placehold.co/400x400/e2e8f0/3b82f6?text=👕+Polo", desc: "Algodão premium" },
-            { id: 5, nome: "Vest
+            { id: 1, nome: "Tênis Nike Air Max", preco: 459.90, cat: "masculino", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop" },
+            { id: 2, nome: "Camisa Polo Slim Fit", preco: 149.90, cat: "masculino", img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop" },
+            { id: 3, nome: "Jaqueta Jeans Azul", preco: 289.90, cat: "masculino", img: "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=400&h=400&fit=crop" },
+            { id: 4, nome: "Tênis Casual", preco: 199.90, cat: "masculino", img: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop" },
+            { id: 5, nome: "Vestido Floral Luxo", preco: 219.90, cat: "feminino", img: "https://images.unsplash.com/photo-1572804013307-5977584105b8?w=400&h=400&fit=crop" },
+            { id: 6, nome: "Bolsa Feminina", preco: 179.90, cat: "feminino", img: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop" },
+            { id: 7, nome: "Sandália Rasteira", preco: 89.90, cat: "feminino", img: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=400&fit=crop" },
+            { id: 8, nome: "Blusa de Frio", preco: 159.90, cat: "feminino", img: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&h=400&fit=crop" },
+            { id: 9, nome: "Perfume Importado 100ml", preco: 399.00, cat: "perfumes", img: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=400&fit=crop" },
+            { id: 10, nome: "Kit Perfumes (3 unidades)", preco: 299.00, cat: "perfumes", img: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=400&h=400&fit=crop" },
+            { id: 11, nome: "Perfume Francês", preco: 459.00, cat: "perfumes", img: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=400&fit=crop" }
+        ];
+
+        let carrinho = JSON.parse(localStorage.getItem('gmCartFinal')) || [];
+
+        function saveCart() {
+            localStorage.setItem('gmCartFinal', JSON.stringify(carrinho));
+        }
+
+        function renderProdutos() {
+            const categorias = ['masculino', 'feminino', 'perfumes'];
+            categorias.forEach(cat => {
+                const container = document.getElementById(`grid-${cat}`);
+                if (!container) return;
+                const itens = produtos.filter(p => p.cat === cat);
+                container.innerHTML = itens.map(p => `
+                    <div class="product-card bg-white rounded-2xl shadow-md overflow-hidden group">
+                        <img src="${p.img}" class="w-full h-64 object-cover group-hover:scale-105 transition duration-500" alt="${p.nome}">
+                        <div class="p-4">
+                            <h3 class="font-bold text-gray-800 text-lg">${p.nome}</h3>
+                            <p class="text-indigo-600 font-black text-2xl mt-1">R$ ${p.preco.toFixed(2)}</p>
+                            <button onclick="addToCart(${p.id})" class="w-full bg-gray-900 hover:bg-indigo-700 text-white mt-4 py-3 rounded-xl font-bold transition">
+                                <i class="fa-solid fa-cart-plus mr-2"></i> ADICIONAR
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function toggleCart() {
+            document.getElementById('cartSidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('open');
+        }
+
+        function addToCart(id) {
+            const produto = produtos.find(p => p.id === id);
+            const existente = carrinho.find(item => item.id === id);
+            if (existente) {
+                existente.qtd = (existente.qtd || 1) + 1;
+            } else {
+                carrinho.push({ ...produto, qtd: 1 });
+            }
+            updateCart();
+            saveCart();
+            toggleCart();
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cartItems');
+            const totalQtd = carrinho.reduce((acc, item) => acc + (item.qtd || 1), 0);
+            document.getElementById('cartCount').innerText = totalQtd;
+            
+            if (carrinho.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-bag-shopping text-5xl mb-3"></i><p>Seu carrinho está vazio</p></div>';
+                document.getElementById('cartTotal').innerText = 'R$ 0,00';
+                return;
+            }
+            
+            container.innerHTML = carrinho.map((item, idx) => `
+                <div class="flex justify-between items-start border-b pb-4 mb-4">
+                    <div class="flex-1">
+                        <p class="font-bold text-gray-800">${item.nome}</p>
+                        <p class="text-indigo-600 font-bold">R$ ${item.preco.toFixed(2)}</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <button onclick="alterarQtd(${idx}, -1)" class="bg-gray-200 px-3 py-1 rounded-lg font-bold">-</button>
+                            <span class="font-bold">${item.qtd || 1}</span>
+                            <button onclick="alterarQtd(${idx}, 1)" class="bg-gray-200 px-3 py-1 rounded-lg font-bold">+</button>
+                        </div>
+                    </div>
+                    <button onclick="removerItem(${idx})" class="text-red-500 hover:text-red-700 font-bold text-sm"><i class="fa-regular fa-trash-can text-lg"></i></button>
+                </div>
+            `).join('');
+            
+            const total = carrinho.reduce((acc, item) => acc + (item.preco * (item.qtd || 1)), 0);
+            document.getElementById('cartTotal').innerText = `R$ ${total.toFixed(2)}`;
+        }
+
+        function alterarQtd(index, delta) {
+            if (carrinho[index]) {
+                const novaQtd = (carrinho[index].qtd || 1) + delta;
+                if (novaQtd <= 0) {
+                    carrinho.splice(index, 1);
+                } else {
+                    carrinho[index].qtd = novaQtd;
+                }
+                updateCart();
+                saveCart();
+            }
+        }
+
+        function removerItem(index) {
+            carrinho.splice(index, 1);
+            updateCart();
+            saveCart();
+        }
+
+        function checkout() {
+            if(carrinho.length === 0) {
+                alert("Seu carrinho está vazio!");
+                return;
+            }
+            
+            let mensagem = "🛍️ *PEDIDO GM IMPORT* 🛍️\n\n";
+            let total = 0;
+            
+            carrinho.forEach(item => {
+                const qtd = item.qtd || 1;
+                mensagem += `• ${item.nome}\n  Quantidade: ${qtd}\n  Valor: R$ ${(item.preco * qtd).toFixed(2)}\n\n`;
+                total += item.preco * qtd;
+            });
+            
+            mensagem += `────────────────────\n📦 *TOTAL: R$ ${total.toFixed(2)}*\n\n`;
+            mensagem += "👤 *Dados do Cliente:*\n";
+            mensagem += "Nome: \n";
+            mensagem += "Endereço: \n";
+            mensagem += "Complemento/Referência: \n\n";
+            mensagem += "🔗 *GM Import -  Agradecemos a preferência!*";
+            
+            window.open(`https://wa.me/5561982740074?text=${encodeURIComponent(mensagem)}`, '_blank');
+        }
+
+        // Carrosséis Automáticos
+        let mlIdx = 0;
+        let heroIdx = 0;
+        const mlTotal = 4;
+        const heroTotal = 3;
+        
+        setInterval(() => {
+            mlIdx = (mlIdx + 1) % mlTotal;
+            document.getElementById('mlTrack').style.transform = `translateX(-${mlIdx * 100}%)`;
+        }, 5000);
+
+        setInterval(() => {
+            heroIdx = (heroIdx + 1) % heroTotal;
+            document.getElementById('heroTrack').style.transform = `translateX(-${heroIdx * 100}%)`;
+        }, 6000);
+
+        // Inicialização
+        renderProdutos();
+        updateCart();
+    </script>
+</body>
+</html>
