@@ -87,12 +87,21 @@
             <h3 class="text-xl font-bold">CARRINHO</h3>
             <button onclick="toggleCart()" class="text-3xl hover:text-gray-200">&times;</button>
         </div>
-        <div id="cartItems" class="p-6 overflow-y-auto" style="height: calc(100vh - 200px);"></div>
+        <div id="cartItems" class="p-6 overflow-y-auto" style="height: calc(100vh - 280px);"></div>
         <div class="absolute bottom-0 w-full p-6 bg-white border-t shadow-lg">
+            <div class="mb-4">
+                <p class="text-[10px] text-gray-500 font-bold uppercase mb-2">Aceitamos Pix e Cartões:</p>
+                <div class="flex gap-4 text-xl text-gray-400">
+                    <i class="fa-brands fa-pix text-teal-500"></i>
+                    <i class="fa-solid fa-credit-card"></i>
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                </div>
+            </div>
             <div class="flex justify-between font-black text-xl mb-4">
                 <span>TOTAL:</span> <span id="cartTotal" class="text-indigo-600">R$ 0,00</span>
             </div>
-            <button onclick="checkout()" class="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-xl font-black transition">FINALIZAR NO WHATSAPP</button>
+            <button onclick="checkout()" class="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-xl font-black transition uppercase tracking-wide">FINALIZAR NO WHATSAPP</button>
         </div>
     </div>
 
@@ -256,18 +265,19 @@
                 return;
             }
             
-            container.innerHTML = carrinho.map((item, idx) => `
-                <div class="flex justify-between items-start border-b pb-4 mb-4">
-                    <div class="flex-1">
-                        <p class="font-bold text-gray-800">${item.nome}</p>
-                        <p class="text-indigo-600 font-bold">R$ ${item.preco.toFixed(2)}</p>
+            container.innerHTML = carrinho.map((item, index) => `
+                <div class="flex items-center gap-4 mb-4 border-b pb-4">
+                    <img src="${item.img}" class="w-16 h-16 object-cover rounded">
+                    <div class="flex-1 text-sm">
+                        <h4 class="font-bold">${item.nome}</h4>
+                        <p class="text-indigo-600 font-black">R$ ${item.preco.toFixed(2)}</p>
                         <div class="flex items-center gap-3 mt-2">
-                            <button onclick="alterarQtd(${idx}, -1)" class="bg-gray-200 px-3 py-1 rounded-lg font-bold">-</button>
+                            <button onclick="alterarQtd(${index}, -1)" class="bg-gray-200 px-2 rounded font-bold">-</button>
                             <span class="font-bold">${item.qtd || 1}</span>
-                            <button onclick="alterarQtd(${idx}, 1)" class="bg-gray-200 px-3 py-1 rounded-lg font-bold">+</button>
+                            <button onclick="alterarQtd(${index}, 1)" class="bg-gray-200 px-2 rounded font-bold">+</button>
+                            <button onclick="removerItem(${index})" class="bg-red-500 text-white px-2 rounded font-bold ml-2">🗑️</button>
                         </div>
                     </div>
-                    <button onclick="removerItem(${idx})" class="text-red-500 hover:text-red-700 font-bold text-sm"><i class="fa-regular fa-trash-can text-lg"></i></button>
                 </div>
             `).join('');
             
@@ -300,23 +310,62 @@
                 return;
             }
             
-            let mensagem = "🛍️ *PEDIDO GM IMPORT* 🛍️\n\n";
-            let total = 0;
+            // Pergunta a forma de pagamento
+            let pagamento = prompt(
+                "ESCOLHA A FORMA DE PAGAMENTO:\n\n" +
+                "1 - 💚 PIX (5% OFF)\n" +
+                "2 - 💳 CARTÃO DE CRÉDITO\n" +
+                "3 - 💳 CARTÃO DE DÉBITO\n\n" +
+                "Digite 1, 2 ou 3:"
+            );
+            
+            let pagamentoTexto = "";
+            let totalFinal = 0;
+            const totalOriginal = carrinho.reduce((acc, item) => acc + (item.preco * (item.qtd || 1)), 0);
+            
+            if(pagamento === "1") {
+                pagamentoTexto = "PIX (5% OFF aplicado)";
+                totalFinal = totalOriginal * 0.95;
+            } else if(pagamento === "2") {
+                pagamentoTexto = "CARTÃO DE CRÉDITO";
+                totalFinal = totalOriginal;
+            } else if(pagamento === "3") {
+                pagamentoTexto = "CARTÃO DE DÉBITO";
+                totalFinal = totalOriginal;
+            } else {
+                alert("Opção inválida! Por favor, escolha 1, 2 ou 3.");
+                return;
+            }
+            
+            let msg = "🛍️ *NOVO PEDIDO GM IMPORT* 🛍️\n\n";
+            msg += `📦 *ITENS DO PEDIDO:*\n`;
+            msg += `━━━━━━━━━━━━━━━━━\n`;
             
             carrinho.forEach(item => {
                 const qtd = item.qtd || 1;
-                mensagem += `• ${item.nome}\n  Quantidade: ${qtd}\n  Valor: R$ ${(item.preco * qtd).toFixed(2)}\n\n`;
-                total += item.preco * qtd;
+                msg += `• *${item.nome}* (${qtd}x) - R$ ${(item.preco * qtd).toFixed(2)}\n`;
             });
             
-            mensagem += `────────────────────\n📦 *TOTAL: R$ ${total.toFixed(2)}*\n\n`;
-            mensagem += "👤 *Dados do Cliente:*\n";
-            mensagem += "Nome: \n";
-            mensagem += "Endereço: \n";
-            mensagem += "Complemento/Referência: \n\n";
-            mensagem += "🔗 *GM Import -  Agradecemos a preferência!*";
+            msg += `━━━━━━━━━━━━━━━━━\n`;
             
-            window.open(`https://wa.me/5561982740074?text=${encodeURIComponent(mensagem)}`, '_blank');
+            if(pagamento === "1") {
+                const desconto = totalOriginal * 0.05;
+                msg += `💰 *TOTAL ORIGINAL: R$ ${totalOriginal.toFixed(2)}*\n`;
+                msg += `🎉 *DESCONTO 5% PIX: - R$ ${desconto.toFixed(2)}*\n`;
+                msg += `💚 *TOTAL COM PIX: R$ ${totalFinal.toFixed(2)}*\n`;
+            } else {
+                msg += `💰 *TOTAL: R$ ${totalFinal.toFixed(2)}*\n`;
+            }
+            
+            msg += `💳 *PAGAMENTO:* ${pagamentoTexto}\n`;
+            msg += `\n👤 *DADOS DO CLIENTE:*\n`;
+            msg += `Nome: \n`;
+            msg += `Endereço: \n`;
+            msg += `Complemento: \n`;
+            msg += `\n✅ *Aguardando confirmação de pagamento!*\n`;
+            msg += `🔗 *GM Import - Agradecemos a preferência!*`;
+            
+            window.open(`https://wa.me/5561982740074?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         // Carrosséis Automáticos
